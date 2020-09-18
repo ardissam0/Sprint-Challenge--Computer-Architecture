@@ -68,6 +68,17 @@ class CPU:
         #elif op == "SUB": etc
         elif op == 'MUL':
             self.register[reg_a] *= self.register[reg_b]
+
+        elif op == "CMP":
+            op1 = self.register[reg_a]
+            op2 = self.register[reg_b]
+            if op1 == op2:
+                self.Eflag = 1
+            elif op1 < op2:
+                self.Lflag = 1
+            elif op1 > op2:
+                self.Gflag = 1
+
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -144,6 +155,29 @@ class CPU:
         ret_address = self.ram[self.SP]
         self.pc = ret_address
         self.SP += 1
+    
+    def CMP(self):
+        op1 = self.ram_read(self.pc + 1)
+        op2 = self.ram_read(self.pc + 2)
+        self.alu("CMP", op1, op2)
+
+    def JEQ(self):
+        fl = self.Eflag
+        if fl == 1:
+            self.JMP()
+        else:
+            self.pc += 2
+
+    def JNE(self):
+        fl = self.Eflag
+        if fl == 0:
+            self.JMP()
+        else:
+            self.pc += 2
+
+    def JMP(self):
+        reg = self.ram_read(self.pc + 1)
+        self.pc = self.register[reg]
 
     def run(self):
         """Run the CPU."""
